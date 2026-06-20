@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cron UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⏱️</span>
+      <div>
+        <h1>Cron UI</h1>
+        <p class="sub" id="hostInfo">scheduling scripts…</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" id="refreshBtn" title="Refresh">↻</button>
+      <button class="btn primary" id="newJobBtn">+ New Job</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="emptyState" class="empty hidden">
+      <div class="empty-card">
+        <div class="empty-icon">🗓️</div>
+        <h2>No jobs yet</h2>
+        <p>Create your first scheduled script. It runs as root inside the container on a real cron schedule.</p>
+        <button class="btn primary" id="newJobBtn2">+ New Job</button>
+      </div>
+    </div>
+    <div id="jobGrid" class="grid"></div>
+  </main>
+
+  <!-- Job editor modal -->
+  <div class="modal-backdrop hidden" id="jobModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="modalTitle">New Job</h2>
+        <button class="icon-btn" id="closeModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>Name</label>
+          <input type="text" id="f_name" placeholder="Nightly backup" />
+        </div>
+
+        <div class="form-row">
+          <label>Schedule <span class="hint">(5-field cron)</span></label>
+          <div class="schedule-input">
+            <input type="text" id="f_schedule" placeholder="0 4 * * *" autocomplete="off" />
+            <select id="f_preset">
+              <option value="">Presets…</option>
+              <option value="* * * * *">Every minute</option>
+              <option value="*/5 * * * *">Every 5 minutes</option>
+              <option value="*/15 * * * *">Every 15 minutes</option>
+              <option value="0 * * * *">Hourly</option>
+              <option value="0 4 * * *">Daily at 4 AM</option>
+              <option value="0 0 * * 0">Weekly (Sun midnight)</option>
+              <option value="0 0 1 * *">Monthly (1st)</option>
+            </select>
+          </div>
+          <p class="schedule-preview" id="schedulePreview"></p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Timezone <span class="hint">(optional)</span></label>
+            <input type="text" id="f_timezone" placeholder="America/New_York" />
+          </div>
+          <div class="form-row">
+            <label>Timeout <span class="hint">(seconds, 0 = none)</span></label>
+            <input type="number" id="f_timeout" min="0" value="0" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Working directory <span class="hint">(optional)</span></label>
+          <input type="text" id="f_workdir" placeholder="/data/scripts" />
+        </div>
+
+        <div class="form-row">
+          <label>Uptime Kuma push URL <span class="hint">(optional)</span></label>
+          <div class="schedule-input">
+            <input type="text" id="f_kuma" placeholder="http://192.168.0.67:3001/api/push/abc123" autocomplete="off" />
+            <button type="button" class="btn ghost" id="kumaTest" style="width:auto;white-space:nowrap;">Test</button>
+          </div>
+          <p class="hint">Paste the URL from Kuma as-is (any <code>?status=up&amp;msg=OK&amp;ping=</code> example query is stripped automatically). cron-ui pushes <code>up</code> on success and <code>down</code> on failure after every run — no per-script push code needed.</p>
+        </div>
+
+        <div class="form-row">
+          <label>Environment variables <span class="hint">(one KEY=value per line)</span></label>
+          <textarea id="f_env" rows="3" class="mono" placeholder="API_KEY=secret&#10;REGION=us-east"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Script</label>
+          <textarea id="f_script" rows="12" class="mono code" spellcheck="false" placeholder="#!/bin/sh&#10;echo &quot;hello from cron&quot;"></textarea>
+          <p class="hint">Runs via <code>/bin/sh</code>. A <code>#!/bin/sh</code> shebang is added automatically if missing.</p>
+        </div>
+
+        <label class="switch-row">
+          <input type="checkbox" id="f_enabled" checked />
+          <span>Enabled</span>
+        </label>
+      </div>
+      <div class="modal-foot">
+        <span class="form-error" id="formError"></span>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="cancelModal">Cancel</button>
+        <button class="btn primary" id="saveJob">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs / runs drawer -->
+  <div class="modal-backdrop hidden" id="logsModal">
+    <div class="modal wide">
+      <div class="modal-head">
+        <h2 id="logsTitle">Run history</h2>
+        <button class="icon-btn" id="closeLogs">✕</button>
+      </div>
+      <div class="logs-layout">
+        <div class="runs-list" id="runsList"></div>
+        <pre class="log-view" id="logView">Select a run to view output…</pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

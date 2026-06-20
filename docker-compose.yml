@@ -1,0 +1,41 @@
+services:
+  cron-ui:
+    build: .
+    image: cron-ui:latest
+    container_name: cron-ui
+    # Auto-restarts on crash, daemon restart, and host reboot. Combined with all
+    # state living under /data, no jobs/scripts/history are lost across restarts.
+    restart: always
+    stop_grace_period: 30s
+    # Runs as root inside the container (default). Scripts execute as root too.
+    user: root
+    ports:
+      - "8111:8080"
+    environment:
+      # Set your timezone; used as the default for jobs that don't specify one.
+      - TZ=America/New_York
+      # Uncomment to require a token for the UI/API.
+      # - CRON_UI_TOKEN=change-me
+      # Optional global AWS creds available to every job's `aws` calls.
+      # (You can also set these per-job in the UI's env vars instead.)
+      # - AWS_ACCESS_KEY_ID=AKIA...
+      # - AWS_SECRET_ACCESS_KEY=...
+      # - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      # All state (jobs DB, scripts, logs) lives here so it survives reboots.
+      # On ZimaOS use a path under /DATA, e.g. /DATA/cron-ui:/data
+      - ./data:/data
+      # ZimaOS app data for ALL installed apps. Mounted at the SAME path inside
+      # the container so scripts can use identical absolute paths (e.g.
+      # /DATA/AppData/<app>/...). This is where other apps store their data.
+      - /DATA/AppData:/DATA/AppData
+      # Mount additional host paths your scripts need to act on, e.g.:
+      # - /DATA:/DATA
+      # Lets scheduled scripts run `docker ...` against the host daemon.
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    # --- Tier 2: true host-level root (uncomment for host-namespace access) ---
+    # privileged: true
+    # pid: host
+    # Then have a job call:
+    #   nsenter -t 1 -m -u -i -n -p -- /bin/sh -c '<your host command>'
