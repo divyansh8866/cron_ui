@@ -23,7 +23,13 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Main content grows to fill the viewport, pushing the footer to the bottom. */
+main { flex: 1 0 auto; }
+.site-footer { flex-shrink: 0; }
 
 .mono, .code, .log-view, code {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -208,6 +214,23 @@ textarea.code { background: #0a0e14; min-height: 180px; tab-size: 2; }
 .toast.err { border-color: var(--red); }
 .toast.ok { border-color: var(--green); }
 @keyframes slideUp { from { transform: translate(-50%, 12px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+/* ---------------- footer ---------------- */
+.site-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 26px 20px 32px;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+.site-footer a {
+  color: var(--accent-hi);
+  text-decoration: none;
+  font-weight: 550;
+}
+.site-footer a:hover { text-decoration: underline; }
+.site-footer .dot-sep { margin: 0 8px; opacity: .6; }
 
 @media (max-width: 720px) {
   .form-grid { grid-template-columns: 1fr; }

@@ -152,3 +152,11 @@ CRON_UI_DATA=../data uvicorn app:app --reload --port 8080
 
 - Mounting `docker.sock` and/or running `privileged` grants root-equivalent access to the host. Only expose this UI on a trusted network, and set `CRON_UI_TOKEN`.
 - Scripts run as root with whatever you mount — treat the UI as an admin tool.
+
+## License
+
+Released under the [MIT License](LICENSE) — free to use, modify, and distribute.
+
+## Credits
+
+Developed by [Divyansh Patel](https://divyanshpatel.com).
